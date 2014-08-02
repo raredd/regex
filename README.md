@@ -8,9 +8,9 @@ regex
 \* [Character shortcuts and special characters](#character-class-shortcuts)   
 \* [Examples](#examples)    
 
-\* references:   
-[general perl regex](#www.erudil.com/preqr.pdf)     
-[look arounds](#http://www.perlmonks.org/?node_id=518444)   
+#### \* references:   
+<a href="www.erudil.com/preqr.pdf">general perl regex</a>   
+<a href="http://www.perlmonks.org/?node_id=518444">look-arounds</a>
 
 <div align=center><a href="http://xkcd.com/1171/"><img src="http://imgs.xkcd.com/comics/perl_problems.png" style="display: block; margin: auto;"/></a></div>
 
