@@ -51,7 +51,7 @@ The following characters need to be escaped because they have special meanings:
  character | meaning
 --------|--------
 `.`     |match any single character (except `\n`; use `/s` to match `\n`, too)
-`a|b`   |matches either the subexpression preceding or following it (a or b)
+<code>&#124;</code> |matches either the subexpression preceding or following it
 `( )`   |groups subexpressions for capturing to $1, $2... (\\1, \\2, ... in R)
 `(?: )` |groups subexpressions without capturing (cluster)
 `{ }`   |specifies a range of occurrences for the element preceding it
