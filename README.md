@@ -443,7 +443,32 @@ Explanation:
   [.!?]           # group for unrolling the loop
   (?!['\"]?\\s|$) # (special) inner punctuation ok if
   [^.!?]*         # not followed by ws or EOS
-)*                # greedily consume up to punctuation
+)*                # greedily cons
+
+\* **Extracting time formats from strings**
+
+
+```r
+p1 <- c('R uses 1:5 for 1, 2, 3, 4, 5.', 
+        'At 3:00 we will meet up and leave by 4:30:20.',
+        'We will meet at 6:33.', 'He ran it in 0:22.34829985234 seconds.')
+regmatches(p1, gregexpr('\\d{0,2}:\\d{2}(?:[:.]\\d+)?', p1))
+```
+
+```
+## [[1]]
+## character(0)
+## 
+## [[2]]
+## [1] "3:00"    "4:30:20"
+## 
+## [[3]]
+## [1] "6:33"
+## 
+## [[4]]
+## [1] "0:22.34829985234"
+```
+ume up to punctuation
 [.!?]?            # zero or more (special normal*)
 ['\"]?            # optional ending punctuation
 (?=\\s|$)"        # optional closing quote
