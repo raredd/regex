@@ -22,11 +22,11 @@ output:
 [general perl regex](#www.erudil.com/preqr.pdf)     
 [look arounds](#http://www.perlmonks.org/?node_id=518444)   
 
-<a href="http://xkcd.com/1171/"><img src="http://imgs.xkcd.com/comics/perl_problems.png" style="display: block; margin: auto;"/></a>
+<div align=center><a href="http://xkcd.com/1171/"><img src="http://imgs.xkcd.com/comics/perl_problems.png" style="display: block; margin: auto;"/></a></div>
 
-<a href="http://xkcd.com/208/"><img src="http://imgs.xkcd.com/comics/regular_expressions.png" style="display: block; margin: auto;"/></a>
+<div align=center><a href="http://xkcd.com/208/"><img src="http://imgs.xkcd.com/comics/regular_expressions.png" style="display: block; margin: auto;"/></a></div>
 
-<a href="http://xkcd.com/1313/"><img src="http://imgs.xkcd.com/comics/regex_golf.png" style="display: block; margin: auto;"/></a>
+<div align=center><a href="http://xkcd.com/1313/"><img src="http://imgs.xkcd.com/comics/regex_golf.png" style="display: block; margin: auto;"/></a></div>
 
 ### Specific characters
 
