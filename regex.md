@@ -486,3 +486,27 @@ regmatches(p1, gregexpr('\\d{0,2}:\\d{2}(?:[:.]\\d+)?', p1))
 ## [[4]]
 ## [1] "0:22.34829985234"
 ```
+
+\* **Using `\K` and inserting spaces between words**
+
+The `\K` escape sequence resets the starting point of the reported match and any previously consumed characters are no longer included, basically throwing away everything matched up to that point.
+
+Another example of using capturing groups to capture to matched context and referring back to each matched group in the replacement.
+
+
+```r
+p1 <- c('CamelCaseIsFun','ThisIsRegexxxxx')
+gsub('[a-z]\\K(?=[A-Z])', ' ', p1, perl = TRUE)
+```
+
+```
+## [1] "Camel Case Is Fun" "This Is Regexxxxx"
+```
+
+```
+[a-z]       # any character of a to z
+\K          # \K (resets the starting point of the reported match)
+(?=         # look ahead to see if there is:
+  [A-Z]     #   any character of A to Z
+)           # end of look-ahead
+```

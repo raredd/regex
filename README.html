@@ -565,7 +565,23 @@ gsub('(?&lt;=[,.](?!(?&lt;=\\d[,.])(?=\\d)))', ' ', p1, perl = TRUE)</code></pre
 gsub(&quot;([^.!?\\s])([^.!?]*(?:[.!?](?!['\&quot;]?\\s|$)[^.!?]*)*[.!?]?['\&quot;]?)(?=\\s|$)&quot;, &quot;\\U\\1\\E\\2&quot;, txt, perl = TRUE)</code></pre>
 <pre><code>## [1] &quot;This is just a test! I'm not sure if this is o.k. Or if it will work? Who knows? Regex is sorta new to me... There are certain cases that I may not figure out. Sad!&quot;</code></pre>
 <p>Explanation:</p>
-<p>``` [^.!?\\s] # match sentence ending in punctuation (. or !) or end of string [^.!?]* # first char is non-punct, non-whitespace (?: # greedily consume up to punctuation [.!?] # group for unrolling the loop (?[’&quot;]?\s|$) # (special) inner punctuation ok if [^.!?]* # not followed by ws or EOS )* # greedily cons</p>
+<pre><code>[^.!?\\s]         # match sentence ending in punctuation (. or !) or end of string
+[^.!?]*           # first char is non-punct, non-whitespace
+(?:               # greedily consume up to punctuation
+  [.!?]           # group for unrolling the loop
+  (?!['\&quot;]?\\s|$) # (special) inner punctuation ok if
+  [^.!?]*         # not followed by ws or EOS
+)*                # greedily consume up to punctuation
+[.!?]?            # zero or more (special normal*)
+['\&quot;]?            # optional ending punctuation
+(?=\\s|$)&quot;        # optional closing quote</code></pre>
+<p>* <strong>Capturing a word before (or after) a keyword</strong></p>
+<p>This is an example of creating and referencing groups. Each <code>( )</code> defines a group and can be referenced with <code>\\N</code> for the N<sup>th</sup> group.</p>
+<pre class="r"><code>p1 &lt;- 'I want this here-keyword there'
+gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\2', p1, perl = TRUE)
+gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\6', p1, perl = TRUE)</code></pre>
+<pre><code>## [1] &quot;here&quot;</code></pre>
+<pre><code>## [1] &quot;there&quot;</code></pre>
 <p>* <strong>Extracting time formats from strings</strong></p>
 <pre class="r"><code>p1 &lt;- c('R uses 1:5 for 1, 2, 3, 4, 5.', 
         'At 3:00 we will meet up and leave by 4:30:20.',
@@ -582,13 +598,17 @@ regmatches(p1, gregexpr('\\d{0,2}:\\d{2}(?:[:.]\\d+)?', p1))</code></pre>
 ## 
 ## [[4]]
 ## [1] &quot;0:22.34829985234&quot;</code></pre>
-<p>ume up to punctuation [.!?]? # zero or more (special normal*) [’&quot;]? # optional ending punctuation (?=\s|$)&quot; # optional closing quote ``` * <strong>Capturing a word before (or after) a keyword</strong></p>
-<p>This is an example of creating and referencing groups. Each <code>( )</code> defines a group and can be referenced with <code>\\N</code> for the N<sup>th</sup> group.</p>
-<pre class="r"><code>p1 &lt;- 'I want this here-keyword there'
-gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\2', p1, perl = TRUE)
-gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\6', p1, perl = TRUE)</code></pre>
-<pre><code>## [1] &quot;here&quot;</code></pre>
-<pre><code>## [1] &quot;there&quot;</code></pre>
+<p>* <strong>Using <code>\K</code> and inserting spaces between words</strong></p>
+<p>The <code>\K</code> escape sequence resets the starting point of the reported match and any previously consumed characters are no longer included, basically throwing away everything matched up to that point.</p>
+<p>Another example of using capturing groups to capture to matched context and referring back to each matched group in the replacement.</p>
+<pre class="r"><code>p1 &lt;- c('CamelCaseIsFun','ThisIsRegexxxxx')
+gsub('[a-z]\\K(?=[A-Z])', ' ', p1, perl = TRUE)</code></pre>
+<pre><code>## [1] &quot;Camel Case Is Fun&quot; &quot;This Is Regexxxxx&quot;</code></pre>
+<pre><code>[a-z]       # any character of a to z
+\K          # \K (resets the starting point of the reported match)
+(?=         # look ahead to see if there is:
+  [A-Z]     #   any character of A to Z
+)           # end of look-ahead</code></pre>
 </div>
 </div>
 
