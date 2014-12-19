@@ -1,14 +1,7 @@
 <!-- Grab toc from .html since not copied over with keep_md: yes -->
 
-<style type="text/css">
-.main-container {
-  max-width: 940px;
-  margin-left: auto;
-  margin-right: auto;
-}
-</style>
-<div class="container-fluid main-container">
 
+<div class="container-fluid main-container">
 
 <div id="header">
 <h1 class="title">regex in R cheatsheet</h1>
@@ -49,6 +42,7 @@
 <li><a href="#using-k-and-inserting-spaces-between-words">Using <code>&#92;K</code> and inserting spaces between words</a></li>
 </ul></li>
 </ul>
+</div>
 </div>
 
 ##  other resources 
