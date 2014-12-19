@@ -1,12 +1,6 @@
+# regex in R cheatsheet
 
-### perl regex cheatsheet with examples in R
-
-\* [Characters, metacharacters, and quantifiers](#specific-characters)    
-\* [Anchors and look-arounds](#anchors)   
-\* [Character shortcuts and special characters](#character-class-shortcuts)   
-\* [Examples](#examples)
-
-###  other resources 
+##  other resources 
 
 \* __[Regex 101](https://www.regex101.com)__    
 \* [Regex tester](http://regexpal.com)    
@@ -15,7 +9,7 @@
 \* [Explainer 1 (with flavors)](https://www.debuggex.com)   
 \* [Explainer 2 (javascript)](http://www.regexper.com)    
 
-### references:
+## references:
   
 [general perl regex](#www.erudil.com/preqr.pdf)     
 [look arounds](#http://www.perlmonks.org/?node_id=518444)   
@@ -25,6 +19,8 @@
 <div align=center><a href="http://xkcd.com/208/"><img src="http://imgs.xkcd.com/comics/regular_expressions.png" style="display: block; margin: auto;"/></a></div>
 
 <div align=center><a href="http://xkcd.com/1313/"><img src="http://imgs.xkcd.com/comics/regex_golf.png" style="display: block; margin: auto;"/></a></div>
+
+## Basic regex
 
 ### Specific characters
 
@@ -40,7 +36,7 @@
 `\xYY`  |character with the hex code _**NN**_
 `\uYYYY`|character with the hex code _**NNNN**_
 
-**Quantifiers**
+### Quantifiers
 
 These quantifiers apply to the preceding *atom*. By default, they are "greedy" meaning they attempt to match as many characters as possible. In order to match as *few* characters as possible, follow them with a `?`.
 
@@ -53,7 +49,7 @@ character | meaning
 `{n,}`  |match *at least* **n** times
 `{n,m}` |match *at least* **n** times but *no more* than **m** times
 
-**Metacharacters**
+### Metacharacters
 
 The following characters need to be escaped because they have special meanings:
 
@@ -73,7 +69,20 @@ The following characters need to be escaped because they have special meanings:
 `^`     |if the first character of a class, negates that class
 `-`     |unless first, last, or escaped (i.e., `[ad-]`: match a, d, or -), used for a range (`[a-b]`: match any character in the range from a to b)
 
-### Anchors
+### Character class shortcuts
+
+These can be used on their own or within a character class.
+
+character | long version | meaning
+--------|---------------|--------
+`\d`    |`[0-9]`        |digit
+`\D`    |`[^0-9]`       |non-digit
+`\s`    |`[ \t\n\r\f]`  |whitespace
+`\S`    |`[~ \t\n\r\f]` |non-whitespace
+`\w`    |`[a-zA-Z0-9_]` |"word" character
+`\W`    |`[^a-zA-Z0-9_]`|non-"word" character
+
+## Anchors
 
 Also known as *zero-width (length) assertions*, these do not match any characters but "look around" to see what comes before and/or after the current position.
 
@@ -84,7 +93,7 @@ character | meaning
 `\b`    |match at a "word" (`\w`) boundary
 `\B`    |match at *not* a "word" boundary
 
-**Look-ahead and look-behind**
+### Look-ahead and look-behind
 
 Zero-length assertions can also be used to match extended patterns and require that a pattern match succeed (*positive assertion*) or fail (*negative assertion*).
 
@@ -99,20 +108,9 @@ Every extended pattern is written as a parenthetical group with a question mark 
 
 Look-behind expressions cannot be of variable length. That means you cannot use quantifiers (?, *, +, or {1,5}) or alternation of different-length items inside them.
 
-### Character class shortcuts
+## Additional regex things
 
-These can be used on their own or within a character class.
-
-character | long version | meaning
---------|---------------|--------
-`\d`    |`[0-9]`        |digit
-`\D`    |`[^0-9]`       |non-digit
-`\s`    |`[ \t\n\r\f]`  |whitespace
-`\S`    |`[~ \t\n\r\f]` |non-whitespace
-`\w`    |`[a-zA-Z0-9_]` |"word" character
-`\W`    |`[^a-zA-Z0-9_]`|non-"word" character
-
-**Metaquote and case translations**
+### Metaquote and case translations
 
 character | meaning
 --------|--------
@@ -125,7 +123,7 @@ character | meaning
 
 <font size =1><sup>&dagger;</sup>Unicode concept which most often is equal to uppercase, but for certain characters (like the German "sharp s") there is a difference.</font>
 
-**Special variables**
+### Special variables
 
 character | meaning
 --------|--------
@@ -135,7 +133,7 @@ character | meaning
 `\N`    |characters captured by the N<sup>th</sup> set of parentheses (if on the match side)
 `$N`    |characters captured by the N<sup>th</sup> set of parentheses (if *not* on the match side)
 
-**Modifiers**
+### Modifiers
 
 These modifiers apply to the entire pattern (all except `/e` apply to both `m//` and `s///`)
 
@@ -148,16 +146,16 @@ character | meaning
 `/x`    |ignore most whitespace and allow comments
 `/e`    |evaluate right-hand side of `s///` as an expression
 
-**Binding operators**
+### Binding operators
 
 character | meaning
 --------|--------
 `=~`    |TRUE if the regex matches
 `!~`    |TRUE if the regex does *not* match
 
-### Examples
+## Examples
 
-\* **Trimming whitespace**
+### Trimming whitespace
 
 
 ```r
@@ -182,7 +180,7 @@ gsub('\\s+', '', p1)
 ## [1] "thistextstringhasmuchwhitespaceandevensomenewlines"
 ```
 
-\* **Find the last occurrence of a string**
+### Find the last occurrence of a string
 
 There are actually a number of ways to get the last occurrence that don't involve look-arounds, but if you think of "the last foo" as "foo that isn't followed by a string containing foo," you can express that notion like this:
 
@@ -199,7 +197,7 @@ gsub('word(?!.*word)', 'XXX', p2, perl = TRUE)
 ## [1] "the last XXX not followed by werd"
 ```
 
-\* **Capitalize the first letter of each word**
+### Capitalize the first letter of each word
 
 We can use the combination of `regmatches` and `gregexpr` in R so see the letters this regex is matching. Then do a global sub (replace all the matches, not just the first) with the `\\U`ppercase version of the `\\1`<sup>st</sup> group.
 
@@ -217,7 +215,7 @@ gsub('(?<=\\b)([a-z])', '\\U\\1', p1, perl = TRUE)
 ## [1] "Look For A Lower-Case Letter Proceded By A Word Boundary"
 ```
 
-\* **Replacing all or parts of a string**
+### Replacing all or parts of a string
 
 Many substitutions match a chunk of text and then replace part or all of it. You can often avoid that by using look-arounds:
 
@@ -235,7 +233,7 @@ gsub('(?<=word$)', ',', p1, perl = TRUE)    ## only patters on a string boundary
 ## [1] "this is a wordy word and ends on a word,"
 ```
 
-\* **Inserting a character between two matches**
+### Inserting a character between two matches
 
 Sometimes we want to insert after a specific pattern but only if it is followed by another specific pattern.
 
@@ -261,7 +259,7 @@ gsub('(?<=[^A-Z(])(?=[A-Z(])', ' ', p1, perl = TRUE)
 ## [1] "Abc Def (123)"
 ```
 
-\* **Matching a pattern that doesn't include another pattern**
+### Matching a pattern that doesn't include another pattern
 
 You might want to capture everything between foo and bar that doesn't include baz. The technique is to have the regex engine look-ahead at every character to ensure that it isn't the beginning of the undesired pattern:
 
@@ -318,7 +316,9 @@ broken down:
 $               # before an optional \n, and the end of the string
 ```
 
-\* **Greed:** placing `?` after quantifiers determine if we want to match until the last occurrence of the look-ahead or until the first occurrence.
+### Greed
+
+Placing `?` after quantifiers determine if we want to match until the last occurrence of the look-ahead or until the first occurrence.
 
 
 ```r
@@ -339,7 +339,7 @@ regmatches(p1, gregexpr(' a(.*?)z ', p1, perl = TRUE))[[1]]
 ## [4] " at not the last z "
 ```
 
-\* **Extracting from between parentheses (or other characters)**
+### Extracting from between parentheses (or other characters)
 
 
 ```r
@@ -357,7 +357,7 @@ regmatches(p1, gregexpr('(?=\\().*?(?<=\\))', p1, perl = TRUE))[[1]]
 ## [1] "(everything)" "(if any)"
 ```
 
-\* **Nesting (look-arounds inside of other look-arounds)**
+### Nesting (look-arounds inside of other look-arounds)
 
 A look-around sub-expression inherits a starting position from the enclosing expression and can walk all around relative to that position without affecting the position of the enclosing expression. They all have independent (though initially inherited) bookkeeping for where they are in the string.
 
@@ -394,7 +394,7 @@ gsub('(?<=[,.](?!(?<=\\d[,.])(?=\\d)))', ' ', p1, perl = TRUE)
 ## [1] "this is an unformatted, ugly sentence. no spaces one, two, many 1,000.0 commas"
 ```
 
-\* **Capitalizing every first word of every sentence**
+### Capitalizing every first word of every sentence
 
 
 ```r
@@ -421,7 +421,7 @@ Explanation:
 ['\"]?            # optional ending punctuation
 (?=\\s|$)"        # optional closing quote
 ```
-\* **Capturing a word before (or after) a keyword**
+### Capturing a word before (or after) a keyword
 
 This is an example of creating and referencing groups. Each `( )` defines a group and can be referenced with `\\N` for the N<sup>th</sup> group.
 
@@ -437,7 +437,7 @@ gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\6', p1, perl = TRUE)
 ## [1] "there"
 ```
 
-\* **Extracting time formats from strings**
+### Extracting time formats from strings
 
 
 ```r
@@ -461,7 +461,7 @@ regmatches(p1, gregexpr('\\d{0,2}:\\d{2}(?:[:.]\\d+)?', p1))
 ## [1] "0:22.34829985234"
 ```
 
-\* **Using `\K` and inserting spaces between words**
+### Using `\K` and inserting spaces between words
 
 The `\K` escape sequence resets the starting point of the reported match and any previously consumed characters are no longer included, basically throwing away everything matched up to that point.
 
