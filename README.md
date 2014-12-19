@@ -1,16 +1,24 @@
-regex
-=====
 
 ### perl regex cheatsheet with examples in R
 
 \* [Characters, metacharacters, and quantifiers](#specific-characters)    
 \* [Anchors and look-arounds](#anchors)   
 \* [Character shortcuts and special characters](#character-class-shortcuts)   
-\* [Examples](#examples)    
+\* [Examples](#examples)
 
-#### \* references:   
-<a href="www.erudil.com/preqr.pdf">general perl regex</a>   
-<a href="http://www.perlmonks.org/?node_id=518444">look-arounds</a>
+###  other resources 
+
+\* __[Regex 101](https://www.regex101.com)__    
+\* [Regex tester](http://regexpal.com)    
+\* __[ReGeX cRoSsWoRdS!](http://regexcrossword.com)__   
+\* __[Text explainer](http://rick.measham.id.au/paste/explain.pl?regex=%28%3F<%3Dfoo%29%5Cs%2Afoo%5BA-Z%5D%5Cd%7B2%2C3%7D)__   
+\* [Explainer 1 (with flavors)](https://www.debuggex.com)   
+\* [Explainer 2 (javascript)](http://www.regexper.com)    
+
+### references:
+  
+[general perl regex](#www.erudil.com/preqr.pdf)     
+[look arounds](#http://www.perlmonks.org/?node_id=518444)   
 
 <div align=center><a href="http://xkcd.com/1171/"><img src="http://imgs.xkcd.com/comics/perl_problems.png" style="display: block; margin: auto;"/></a></div>
 
@@ -26,8 +34,11 @@ regex
 `\n`    |newline (OS neutral)
 `\r`    |carriage return
 `\f`    |form feed
-`\cx`   |control character **CTRL-_x_**
+`\cx`   |control character **C-_x_**
 `\NNN`  |octal code for ASCII character _**NNN**_
+`\cN`   |control character with the hex code _**N**_
+`\xYY`  |character with the hex code _**NN**_
+`\uYYYY`|character with the hex code _**NNNN**_
 
 **Quantifiers**
 
@@ -37,27 +48,28 @@ character | meaning
 --------|--------
 `*`     |match **0** or more times, i.e., any number of times
 `+`     |match **1** or more times, i.e., at least once
-`?`     |match 0 or 1 times, i.e., at most once
+`?` (`??`)     |match (or lazy match) 0 or 1 times, i.e., at most once
 `{n}`   |match *exactly* **n** times
 `{n,}`  |match *at least* **n** times
 `{n,m}` |match *at least* **n** times but *no more* than **m** times
 
 **Metacharacters**
 
-The following characters need to be escaped because they have special meanings: 
+The following characters need to be escaped because they have special meanings:
 
 `\ | ( ) [ { ^ $ * + ? .`
 
  character | meaning
 --------|--------
 `.`     |match any single character (except `\n`; use `/s` to match `\n`, too)
-<code>&#124;</code> |matches either the subexpression preceding or following it
+`|`     |matches either the subexpression preceding or following it
 `( )`   |groups subexpressions for capturing to $1, $2... (\\1, \\2, ... in R)
 `(?: )` |groups subexpressions without capturing (cluster)
 `{ }`   |specifies a range of occurrences for the element preceding it
 `[ ]`   |define character class, matches any one of the characters contained within the brackets
 `\`     |escapes next character, i.e., modify the meaning of the next character
 `\N`    |matches the text from the N<sup>th</sup> group
+`\K`    |resets the beginning of the match to the current position (this only affects what is reported as the full match)
 `^`     |if the first character of a class, negates that class
 `-`     |unless first, last, or escaped (i.e., `[ad-]`: match a, d, or -), used for a range (`[a-b]`: match any character in the range from a to b)
 
@@ -165,17 +177,8 @@ gsub('\\s+', '', p1)
 
 ```
 ## [1] "this text string   has much white space \nand even some new \n\nlines    "
-```
-
-```
 ## [1] "  this text string   has much white space \nand even some new \n\nlines"
-```
-
-```
 ## [1] "this text string   has much white space \nand even some new \n\nlines"
-```
-
-```
 ## [1] "thistextstringhasmuchwhitespaceandevensomenewlines"
 ```
 
@@ -193,9 +196,6 @@ gsub('word(?!.*word)', 'XXX', p2, perl = TRUE)
 
 ```
 ## [1] "the last word not followed by XXX"
-```
-
-```
 ## [1] "the last XXX not followed by werd"
 ```
 
@@ -214,9 +214,6 @@ gsub('(?<=\\b)([a-z])', '\\U\\1', p1, perl = TRUE)
 
 ```
 ## [1] "f" "c" "p" "b" "a"
-```
-
-```
 ## [1] "Look For A Lower-Case Letter Proceded By A Word Boundary"
 ```
 
@@ -234,13 +231,7 @@ gsub('(?<=word$)', ',', p1, perl = TRUE)    ## only patters on a string boundary
 
 ```
 ## [1] "this is a word,y word, and ends on a word,"
-```
-
-```
 ## [1] "this is a wordy word, and ends on a word,"
-```
-
-```
 ## [1] "this is a wordy word and ends on a word,"
 ```
 
@@ -342,17 +333,8 @@ regmatches(p1, gregexpr(' a(.*?)z ', p1, perl = TRUE))[[1]]
 
 ```
 ## [1] " a to z and after z if there is a z "
-```
-
-```
 ## [1] " a to z and after z if there is a z that follows but at not the last z "
-```
-
-```
-## [1] " a to z "  " after z " " a z "
-```
-
-```
+## [1] " a to z "  " after z " " a z "    
 ## [1] " a to z "            " after z "           " a z "              
 ## [4] " at not the last z "
 ```
@@ -371,13 +353,7 @@ regmatches(p1, gregexpr('(?=\\().*?(?<=\\))', p1, perl = TRUE))[[1]]
 
 ```
 ## [1] "(everything) between parentheses (if any)"
-```
-
-```
-## [1] "everything" "if any"
-```
-
-```
+## [1] "everything" "if any"    
 ## [1] "(everything)" "(if any)"
 ```
 
@@ -415,9 +391,6 @@ gsub('(?<=[,.](?!(?<=\\d[,.])(?=\\d)))', ' ', p1, perl = TRUE)
 
 ```
 ## [1] "this is an unformatted, ugly sentence.no spaces one, two, many 1,000.0 commas"
-```
-
-```
 ## [1] "this is an unformatted, ugly sentence. no spaces one, two, many 1,000.0 commas"
 ```
 
@@ -461,9 +434,6 @@ gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\6', p1, perl = TRUE)
 
 ```
 ## [1] "here"
-```
-
-```
 ## [1] "there"
 ```
 
@@ -507,8 +477,6 @@ gsub('[a-z]\\K(?=[A-Z])', ' ', p1, perl = TRUE)
 ## [1] "Camel Case Is Fun" "This Is Regexxxxx"
 ```
 
-Details:
-
 ```
 [a-z]       # any character of a to z
 \K          # \K (resets the starting point of the reported match)
@@ -516,3 +484,4 @@ Details:
   [A-Z]     #   any character of A to Z
 )           # end of look-ahead
 ```
+
