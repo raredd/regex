@@ -9,8 +9,8 @@
 
 <div id="TOC">
 <ul>
-<li><a href="#other-resources">other resources</a></li>
-<li><a href="#references">references:</a></li>
+<li><a href="#other-resources">Other resources</a></li>
+<li><a href="#references">References</a></li>
 <li><a href="#basic-regex">Basic regex</a><ul>
 <li><a href="#specific-characters">Specific characters</a></li>
 <li><a href="#quantifiers">Quantifiers</a></li>
@@ -26,6 +26,7 @@
 <li><a href="#modifiers">Modifiers</a></li>
 <li><a href="#binding-operators">Binding operators</a></li>
 </ul></li>
+<li><a href="#function-for-captures">Function for captures</a></li>
 <li><a href="#examples">Examples</a><ul>
 <li><a href="#trimming-whitespace">Trimming whitespace</a></li>
 <li><a href="#find-the-last-occurrence-of-a-string">Find the last occurrence of a string</a></li>
@@ -40,12 +41,13 @@
 <li><a href="#capturing-a-word-before-or-after-a-keyword">Capturing a word before (or after) a keyword</a></li>
 <li><a href="#extracting-time-formats-from-strings">Extracting time formats from strings</a></li>
 <li><a href="#using-k-and-inserting-spaces-between-words">Using <code>&#92;K</code> and inserting spaces between words</a></li>
+<li><a href="#removing-words-with-repeating-letters">Removing words with repeating letters</a></li>
 </ul></li>
 </ul>
 </div>
 </div>
 
-##  other resources 
+##  Other resources 
 
 \* __[Regex 101](https://www.regex101.com)__    
 \* [Regex tester](http://regexpal.com)    
@@ -54,10 +56,10 @@
 \* [Explainer 1 (with flavors)](https://www.debuggex.com)   
 \* [Explainer 2 (javascript)](http://www.regexper.com)    
 
-## references:
+## References
   
-[general perl regex](#www.erudil.com/preqr.pdf)     
-[look arounds](#http://www.perlmonks.org/?node_id=518444)   
+[general perl regex](www.erudil.com/preqr.pdf)     
+[look-arounds](http://www.perlmonks.org/?node_id=518444)   
 
 <div align=center><a href="http://xkcd.com/1171/"><img src="http://imgs.xkcd.com/comics/perl_problems.png" style="display: block; margin: auto;"/></a></div>
 
@@ -197,6 +199,42 @@ character | meaning
 --------|--------
 `=~`    |TRUE if the regex matches
 `!~`    |TRUE if the regex does *not* match
+
+## Function for captures
+
+Common r functions like `regexpr`, `gregexpr`, or `regexec` are more focused on matching regular expressions than returning matches. Using a [helper function](https://github.com/raredd/rawr/blob/master/R/utils.R#L1352:L1420), we can extract the captures in a useful format.
+
+
+```r
+library('rawr')
+x <- c('larry:35,M', 'alison:22,F', 'dave', 'lily:55,F')
+m <- regexpr('(.*):(\\d+),([MF])', x, perl = TRUE)
+regcaptures(x, m)
+
+x <- 'ACCACCACCAC'
+m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
+regcaptures(x, m)[[1]]
+```
+
+```
+## [[1]]
+##      [,1]    [,2] [,3]
+## [1,] "larry" "35" "M" 
+## 
+## [[2]]
+##      [,1]     [,2] [,3]
+## [1,] "alison" "22" "F" 
+## 
+## [[3]]
+## character(0)
+## 
+## [[4]]
+##      [,1]   [,2] [,3]
+## [1,] "lily" "55" "F" 
+## 
+##      [,1] [,2] [,3] [,4] [,5] [,6] [,7]
+## [1,] "AC" "CC" "AC" "CC" "AC" "CC" "AC"
+```
 
 ## Examples
 
@@ -530,3 +568,30 @@ gsub('[a-z]\\K(?=[A-Z])', ' ', p1, perl = TRUE)
 )           # end of look-ahead
 ```
 
+### Removing words with repeating letters
+
+It may be useful to filter out words with repeating characters which are not really words at all.
+
+```{r, results='hold'}
+p1 <- "aaaahahahahaha that was a good banana joke ahahah haha aha harhar"
+gsub('\\b(\\S+?)\\1\\S*\\b', '', p1, perl = TRUE)
+```
+
+```
+## [1] " that was a good banana joke   aha "
+
+```
+
+```
+\b        # the boundary between a word char (\w) and
+          # something that is not a word char
+(         # group and capture to \1:
+  \S+?     #  non-whitespace (all but \n, \r, \t, \f, and " ") (1 or
+           #  more times (matching the least amount possible))
+)         # end of \1
+\1        # what was matched by capture \1
+\S*       # non-whitespace (all but \n, \r, \t, \f, and " ") (0 or
+          # more times (matching the most amount possible))
+\b        # the boundary between a word char (\w) and
+          # something that is not a word char
+```
