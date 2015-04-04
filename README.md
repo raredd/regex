@@ -579,7 +579,6 @@ gsub('\\b(\\S+?)\\1\\S*\\b', '', p1, perl = TRUE)
 
 ```
 ## [1] " that was a good banana joke   aha "
-
 ```
 
 ```
