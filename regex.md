@@ -11,8 +11,8 @@
 
 ## References
   
-[general perl regex](#www.erudil.com/preqr.pdf)     
-[look-arounds](#http://www.perlmonks.org/?node_id=518444)   
+[general perl regex](www.erudil.com/preqr.pdf)     
+[look-arounds](http://www.perlmonks.org/?node_id=518444)   
 
 <div align=center><a href="http://xkcd.com/1171/"><img src="http://imgs.xkcd.com/comics/perl_problems.png" style="display: block; margin: auto;"/></a></div>
 
