@@ -42,6 +42,7 @@
 <li><a href="#extracting-time-formats-from-strings">Extracting time formats from strings</a></li>
 <li><a href="#using-k-and-inserting-spaces-between-words">Using <code>&#92;K</code> and inserting spaces between words</a></li>
 <li><a href="#removing-words-with-repeating-letters">Removing words with repeating letters</a></li>
+<li><a href="#prune-skip-fail"><code>(*PRUNE)</code>, <code>(*SKIP)</code>, <code>(*FAIL)</code>, <code>(?!)</code></a></li>
 </ul></li>
 </ul>
 </div>
@@ -522,7 +523,6 @@ gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\6', p1, perl = TRUE)
 
 ### Extracting time formats from strings
 
-
 ```r
 p1 <- c('R uses 1:5 for 1, 2, 3, 4, 5.', 
         'At 3:00 we will meet up and leave by 4:30:20.',
@@ -577,6 +577,38 @@ p1 <- "aaaahahahahaha that was a good banana joke ahahah haha aha harhar"
 gsub('\\b(\\S+?)\\1\\S*\\b', '', p1, perl = TRUE)
 ```
 
+### `(*SKIP)`, `(*PRUNE)`, `(*FAIL)`, `(?!)`
+
+[See also](https://regex101.com/r/hS1rN1/1)
+
+
+```r
+p1 <- c('met','meet','eel','elm')
+
+gsub('\\w*(ee|me)\\w*(*SKIP)(*FAIL)|e', '', p1, perl = TRUE)
+gsub('\\w*[em]e\\w*(*SKIP)(?!)|e', '', p1, perl = TRUE)
+```
+
+```
+## [1] "met"  "meet" "eel"  "lm"  
+## [1] "met"  "meet" "eel"  "lm"
+```
+
+```
+\w*       # match any word character [a-zA-Z0-9_], 0 or more times, greedy
+(         # group and capture to \1:
+  ee|me    # ee or me, literally
+)         # end \1
+\w*       # match any word character [a-zA-Z0-9_], 0 or more times, greedy
+(*SKIP)   # acts like (*PRUNE), except that if the pattern is unanchored,
+          # the bumpalong advance is not to the next character, but to the
+          # position in the subject where (*SKIP) was encountered
+(*FAIL)   # verb synonymous with (?!), forces a matching failure at the given
+          # position in the pattern
+|         # OR
+e         # e, literaly
+```
+
 ```
 ## [1] " that was a good banana joke   aha "
 ```
@@ -593,4 +625,36 @@ gsub('\\b(\\S+?)\\1\\S*\\b', '', p1, perl = TRUE)
           # more times (matching the most amount possible))
 \b        # the boundary between a word char (\w) and
           # something that is not a word char
+```
+
+### `(*SKIP)`, `(*PRUNE)`, `(*FAIL)`, `(?!)`
+
+[See also](https://regex101.com/r/hS1rN1/1)
+
+
+```r
+p1 <- c('met','meet','eel','elm')
+
+gsub('\\w*(ee|me)\\w*(*SKIP)(*FAIL)|e', '', p1, perl = TRUE)
+gsub('\\w*[em]e\\w*(*SKIP)(?!)|e', '', p1, perl = TRUE)
+```
+
+```
+## [1] "met"  "meet" "eel"  "lm"  
+## [1] "met"  "meet" "eel"  "lm"
+```
+
+```
+\w*       # match any word character [a-zA-Z0-9_], 0 or more times, greedy
+(         # group and capture to \1:
+  ee|me    # ee or me, literally
+)         # end \1
+\w*       # match any word character [a-zA-Z0-9_], 0 or more times, greedy
+(*SKIP)   # acts like (*PRUNE), except that if the pattern is unanchored,
+          # the bumpalong advance is not to the next character, but to the
+          # position in the subject where (*SKIP) was encountered
+(*FAIL)   # verb synonymous with (?!), forces a matching failure at the given
+          # position in the pattern
+|         # OR
+e         # e, literaly
 ```

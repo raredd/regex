@@ -547,3 +547,35 @@ gsub('\\b(\\S+?)\\1\\S*\\b', '', p1, perl = TRUE)
 \b        # the boundary between a word char (\w) and
           # something that is not a word char
 ```
+
+### `(*SKIP)`, `(*PRUNE)`, `(*FAIL)`, `(?!)`
+
+[See also](https://regex101.com/r/hS1rN1/1)
+
+
+```r
+p1 <- c('met','meet','eel','elm')
+
+gsub('\\w*(ee|me)\\w*(*SKIP)(*FAIL)|e', '', p1, perl = TRUE)
+gsub('\\w*[em]e\\w*(*SKIP)(?!)|e', '', p1, perl = TRUE)
+```
+
+```
+## [1] "met"  "meet" "eel"  "lm"  
+## [1] "met"  "meet" "eel"  "lm"
+```
+
+```
+\w*       # match any word character [a-zA-Z0-9_], 0 or more times, greedy
+(         # group and capture to \1:
+  ee|me    # ee or me, literally
+)         # end \1
+\w*       # match any word character [a-zA-Z0-9_], 0 or more times, greedy
+(*SKIP)   # acts like (*PRUNE), except that if the pattern is unanchored,
+          # the bumpalong advance is not to the next character, but to the
+          # position in the subject where (*SKIP) was encountered
+(*FAIL)   # verb synonymous with (?!), forces a matching failure at the given
+          # position in the pattern
+|         # OR
+e         # e, literaly
+```
