@@ -42,7 +42,7 @@
 <li><a href="#extracting-time-formats-from-strings">Extracting time formats from strings</a></li>
 <li><a href="#using-k-and-inserting-spaces-between-words">Using <code>&#92;K</code> and inserting spaces between words</a></li>
 <li><a href="#removing-words-with-repeating-letters">Removing words with repeating letters</a></li>
-<li><a href="#prune-skip-fail"><code>(*PRUNE)</code>, <code>(*SKIP)</code>, <code>(*FAIL)</code>, <code>(?!)</code></a></li>
+<li><a href="#prune-skip-fail"><code>(&#42;PRUNE)</code>, <code>(&#42;SKIP)</code>, <code>(&#42;FAIL)</code>, <code>(?!)</code></a></li>
 </ul></li>
 </ul>
 </div>
@@ -627,7 +627,7 @@ e         # e, literaly
           # something that is not a word char
 ```
 
-### `(*SKIP)`, `(*PRUNE)`, `(*FAIL)`, `(?!)`
+### `(*SKIP)`, `(*PRUNE)`, `(*FAIL)`, `(?!)`<a id="prune-skip-fail"></a>
 
 [See also](https://regex101.com/r/hS1rN1/1)
 
