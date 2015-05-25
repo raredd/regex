@@ -464,5 +464,13 @@ gsub('\\w*[em]e\\w*(*SKIP)(?!)|e', '', p1, perl = TRUE)
 (*FAIL)   # verb synonymous with (?!), forces a matching failure at the given
           # position in the pattern
 |         # OR
-e         # e, literaly
+e         # e, literally
+```
+
+### Extract the next word after a keyword
+
+```{r, results='hold'}
+key <- 'the'
+p <- "The yellow log is in the stream and under the dog" 
+regmatches(p, gregexpr(sprintf('(?i)(?<=%s\\s)\\w+', key), p, perl = TRUE))[[1]]
 ```

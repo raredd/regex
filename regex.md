@@ -11,8 +11,8 @@
 
 ## References
   
-[general perl regex](www.erudil.com/preqr.pdf)     
-[look-arounds](http://www.perlmonks.org/?node_id=518444)   
+[general perl regex](#www.erudil.com/preqr.pdf)     
+[look-arounds](#http://www.perlmonks.org/?node_id=518444)   
 
 <div align=center><a href="http://xkcd.com/1171/"><img src="http://imgs.xkcd.com/comics/perl_problems.png" style="display: block; margin: auto;"/></a></div>
 
@@ -520,6 +520,7 @@ gsub('[a-z]\\K(?=[A-Z])', ' ', p1, perl = TRUE)
   [A-Z]     #   any character of A to Z
 )           # end of look-ahead
 ```
+
 ### Removing words with repeating letters
 
 It may be useful to filter out words with repeating characters which are not really words at all.
@@ -548,7 +549,13 @@ gsub('\\b(\\S+?)\\1\\S*\\b', '', p1, perl = TRUE)
           # something that is not a word char
 ```
 
-### `(*SKIP)`, `(*PRUNE)`, `(*FAIL)`, `(?!)`
+### `(*PRUNE)`, `(*SKIP)`, `(*FAIL)`, `(?!)`
+
+`(*PRUNE)` verb causes the match to fail at the current starting position in the subject if the rest of the pattern does not match.
+
+`(*SKIP)` acts like `(*PRUNE)`, except that if the pattern is unanchored, the bumpalong advance is not to the next character, but to the position in the subject where `(*SKIP)` was encountered.
+
+`(*FAIL)` or `(?!)` verb forces a matching failure at the given position in the pattern.
 
 [See also](https://regex101.com/r/hS1rN1/1)
 
@@ -577,5 +584,18 @@ gsub('\\w*[em]e\\w*(*SKIP)(?!)|e', '', p1, perl = TRUE)
 (*FAIL)   # verb synonymous with (?!), forces a matching failure at the given
           # position in the pattern
 |         # OR
-e         # e, literaly
+e         # e, literally
+```
+
+### Extract the next word after a keyword
+
+
+```r
+key <- 'the'
+p <- "The yellow log is in the stream and under the dog" 
+regmatches(p, gregexpr(sprintf('(?i)(?<=%s\\s)\\w+', key), p, perl = TRUE))[[1]]
+```
+
+```
+## [1] "yellow" "stream" "dog"
 ```
