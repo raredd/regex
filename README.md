@@ -43,6 +43,7 @@
 <li><a href="#using-k-and-inserting-spaces-between-words">Using <code>&#92;K</code> and inserting spaces between words</a></li>
 <li><a href="#removing-words-with-repeating-letters">Removing words with repeating letters</a></li>
 <li><a href="#prune-skip-fail"><code>(&#42;PRUNE)</code>, <code>(&#42;SKIP)</code>, <code>(&#42;FAIL)</code>, <code>(?!)</code></a></li>
+<li><a href="#extract-the-next-word-after-a-keyword">Extract the next word after a keyword</a></li>
 </ul></li>
 </ul>
 </div>
@@ -659,4 +660,17 @@ gsub('\\w*[em]e\\w*(*SKIP)(?!)|e', '', p1, perl = TRUE)
           # position in the pattern
 |         # OR
 e         # e, literaly
+```
+
+### Extract the next word after a keyword
+
+
+```r
+key <- 'the'
+p <- "The yellow log is in the stream and under the dog" 
+regmatches(p, gregexpr(sprintf('(?i)(?<=%s\\s)\\w+', key), p, perl = TRUE))[[1]]
+```
+
+```
+## [1] "yellow" "stream" "dog"
 ```
