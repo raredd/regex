@@ -5,6 +5,7 @@
 \* __[Regex 101](https://www.regex101.com)__    
 \* [Regex tester](http://regexpal.com)    
 \* __[ReGeX cRoSsWoRdS!](http://regexcrossword.com)__   
+\* __[regex golf!](http://regex.alf.nu)__   
 \* __[Text explainer](http://rick.measham.id.au/paste/explain.pl?regex=%28%3F<%3Dfoo%29%5Cs%2Afoo%5BA-Z%5D%5Cd%7B2%2C3%7D)__   
 \* [Explainer 1 (with flavors)](https://www.debuggex.com)   
 \* [Explainer 2 (javascript)](http://www.regexper.com)    
