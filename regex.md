@@ -217,6 +217,16 @@ gsub('\\s+', '', p1)
 ## [1] "thistextstringhasmuchwhitespaceandevensomenewlines"
 ```
 
+```r
+## remove whitespace between single letters
+p1 <- c('L L C',  'P O BOX  123456 N Y', 'NEW YORK')
+gsub('(?<=\\b\\w)\\s(?=\\w\\b)', '', p1, perl = TRUE)
+```
+
+```
+## [1] "LLC"               "PO BOX  123456 NY" "NEW YORK"         
+```
+
 ### Find the last occurrence of a string
 
 There are actually a number of ways to get the last occurrence that don't involve look-arounds, but if you think of "the last foo" as "foo that isn't followed by a string containing foo," you can express that notion like this:
