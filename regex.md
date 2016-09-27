@@ -1,15 +1,48 @@
----
-title: "regex in R cheatsheet"
-output:
-  html_document:
-    fig_caption: yes
-    highlight: default
-    keep_md: yes
-    number_sections: no
-    self_contained: yes
-    theme: journal
-    toc: yes
----
+# regex in R cheatsheet
+
+<div id="TOC">
+<ul>
+<li><a href="#other-resources">Other resources</a></li>
+<li><a href="#references">References</a></li>
+<li><a href="#basic-regex">Basic regex</a><ul>
+<li><a href="#specific-characters">Specific characters</a></li>
+<li><a href="#quantifiers">Quantifiers</a></li>
+<li><a href="#metacharacters">Metacharacters</a></li>
+<li><a href="#character-class-shortcuts">Character class shortcuts</a></li>
+</ul></li>
+<li><a href="#anchors">Anchors</a><ul>
+<li><a href="#look-ahead-and-look-behind">Look-ahead and look-behind</a></li>
+</ul></li>
+<li><a href="#additional-regex-things">Additional regex things</a><ul>
+<li><a href="#metaquote-and-case-translations">Metaquote and case translations</a></li>
+<li><a href="#special-variables">Special variables</a></li>
+<li><a href="#modifiers">Modifiers</a></li>
+<li><a href="#binding-operators">Binding operators</a></li>
+</ul></li>
+<li><a href="#function-for-captures">Function for captures</a></li>
+<li><a href="#examples">Examples</a><ul>
+<li><a href="#trimming-whitespace">Trimming whitespace</a></li>
+<li><a href="#find-the-last-occurrence-of-a-string">Find the last occurrence of a string</a></li>
+<li><a href="#capitalize-the-first-letter-of-each-word">Capitalize the first letter of each word</a></li>
+<li><a href="#replacing-all-or-parts-of-a-string">Replacing all or parts of a string</a></li>
+<li><a href="#inserting-a-character-between-two-matches">Inserting a character between two matches</a></li>
+<li><a href="#matching-a-pattern-that-doesnt-include-another-pattern">Matching a pattern that doesn’t include another pattern</a></li>
+<li><a href="#greed">Greed</a></li>
+<li><a href="#extracting-from-between-parentheses-or-other-characters">Extracting from between parentheses (or other characters)</a></li>
+<li><a href="#nesting-look-arounds-inside-of-other-look-arounds">Nesting (look-arounds inside of other look-arounds)</a></li>
+<li><a href="#capitalizing-every-first-word-of-every-sentence">Capitalizing every first word of every sentence</a></li>
+<li><a href="#capturing-a-word-before-or-after-a-keyword">Capturing a word before (or after) a keyword</a></li>
+<li><a href="#extracting-time-formats-from-strings">Extracting time formats from strings</a></li>
+<li><a href="#using-k-and-inserting-spaces-between-words">Using <code>\K</code> and inserting spaces between words</a></li>
+<li><a href="#removing-words-with-repeating-letters">Removing words with repeating letters</a></li>
+<li><a href="#prune-skip-fail"><code>(*PRUNE)</code>, <code>(*SKIP)</code>, <code>(*FAIL)</code>, <code>(?!)</code></a></li>
+<li><a href="#extract-the-next-word-after-a-keyword">Extract the next word after a keyword</a></li>
+<li><a href="#multiple-condition-matching">Multiple condition matching</a></li>
+<li><a href="#remove-contents-around-characters">Remove contents around characters</a></li>
+<li><a href="#split-on-whitespace-except-when-inside-parens">Split on whitespace except when inside parens</a></li>
+</ul></li>
+</ul>
+</div>
 
 ##  Other resources 
 
@@ -169,7 +202,8 @@ character | meaning
 
 Common r functions like `regexpr`, `gregexpr`, or `regexec` are more focused on matching regular expressions than returning matches. Using a [helper function](https://github.com/raredd/rawr/blob/master/R/utils.R#L1352:L1420), we can extract the captures in a useful format.
 
-```{r, results='hold'}
+
+```r
 library('rawr')
 x <- c('larry:35,M', 'alison:22,F', 'dave', 'lily:55,F')
 m <- regexpr('(.*):(\\d+),([MF])', x, perl = TRUE)
@@ -180,11 +214,32 @@ m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
 regcaptures(x, m)[[1]]
 ```
 
+```
+## $`larry:35,M`
+##      1       7    10 
+## [1,] "larry" "35" "M"
+## 
+## $`alison:22,F`
+##      1        8    11 
+## [1,] "alison" "22" "F"
+## 
+## $dave
+## character(0)
+## 
+## $`lily:55,F`
+##      1      6    9  
+## [1,] "lily" "55" "F"
+## 
+##      1    2    4    5    7    8    10  
+## [1,] "AC" "CC" "AC" "CC" "AC" "CC" "AC"
+```
+
 ## Examples
 
 ### Trimming whitespace
 
-```{r, results='hold'}
+
+```r
 p1 <- '  this text string   has much white space 
 and even some new 
 
@@ -199,28 +254,47 @@ gsub('^\\s+|\\s+$', '', p1)
 gsub('\\s+', '', p1)
 ```
 
-```{r, results='hold'}
+```
+## [1] "this text string   has much white space \nand even some new \n\nlines    "
+## [1] "  this text string   has much white space \nand even some new \n\nlines"
+## [1] "this text string   has much white space \nand even some new \n\nlines"
+## [1] "thistextstringhasmuchwhitespaceandevensomenewlines"
+```
+
+
+```r
 ## remove whitespace between single letters
 p1 <- c('L L C',  'P O BOX  123456 N Y', 'NEW YORK')
 gsub('(?<=\\b\\w)\\s(?=\\w\\b)', '', p1, perl = TRUE)
+```
+
+```
+## [1] "LLC"               "PO BOX  123456 NY" "NEW YORK"
 ```
 
 ### Find the last occurrence of a string
 
 There are actually a number of ways to get the last occurrence that don't involve look-arounds, but if you think of "the last foo" as "foo that isn't followed by a string containing foo," you can express that notion like this:
 
-```{r, results='hold'}
+
+```r
 p1 <- 'the last word not followed by word'
 p2 <- 'the last word not followed by werd'
 gsub('word(?!.*word)', 'XXX', p1, perl = TRUE)
 gsub('word(?!.*word)', 'XXX', p2, perl = TRUE)
 ```
 
+```
+## [1] "the last word not followed by XXX"
+## [1] "the last XXX not followed by werd"
+```
+
 ### Capitalize the first letter of each word
 
 We can use the combination of `regmatches` and `gregexpr` in R so see the letters this regex is matching. Then do a global sub (replace all the matches, not just the first) with the `\\U`ppercase version of the `\\1`<sup>st</sup> group.
 
-```{r, results='hold'}
+
+```r
 ## positive look-behind assertion for a word boundary
 ## then match letters and replace with the uppercase version
 p1 <- 'Look for A Lower-case Letter proceded by a Word Boundary'
@@ -228,31 +302,53 @@ regmatches(p1, gregexpr('(?<=\\b)([a-z])', p1, perl = TRUE))[[1]]
 gsub('(?<=\\b)([a-z])', '\\U\\1', p1, perl = TRUE)
 ```
 
+```
+## [1] "f" "c" "p" "b" "a"
+## [1] "Look For A Lower-Case Letter Proceded By A Word Boundary"
+```
+
 ### Replacing all or parts of a string
 
 Many substitutions match a chunk of text and then replace part or all of it. You can often avoid that by using look-arounds:
 
-```{r, results='hold'}
+
+```r
 p1 <- 'this is a wordy word and ends on a word'
 gsub('(?<=word)', ',', p1, perl = TRUE)     ## find every pattern match
 gsub('(?<=word\\b)', ',', p1, perl = TRUE)  ## only patterns on a word boundary
 gsub('(?<=word$)', ',', p1, perl = TRUE)    ## only patters on a string boundary
 ```
 
+```
+## [1] "this is a word,y word, and ends on a word,"
+## [1] "this is a wordy word, and ends on a word,"
+## [1] "this is a wordy word and ends on a word,"
+```
+
 ### Inserting a character between two matches
 
 Sometimes we want to insert after a specific pattern but only if it is followed by another specific pattern.
 
-```{r, results='hold'}
+
+```r
 p1 <- 'this lookahead needs a hyphen, but this look ahead does not'
 gsub('(?<=look)(?=ahead)', '-', p1, perl = TRUE)
 ```
 
+```
+## [1] "this look-ahead needs a hyphen, but this look ahead does not"
+```
+
 The next defines two look-around groups. The first uses a look-behind (`(?<= )`) and defines a character class of non-capital letter characters followed by `(`; the second group defines (capital) letter characters followed by `(` but in a look-*ahead* (`(?= )`).
 
-```{r, results='hold'}
+
+```r
 p1 <- 'AbcDef(123)'
 gsub('(?<=[^A-Z(])(?=[A-Z(])', ' ', p1, perl = TRUE)
+```
+
+```
+## [1] "Abc Def (123)"
 ```
 
 ### Matching a pattern that doesn't include another pattern
@@ -270,20 +366,30 @@ foo  # Match starting at foo
  bar  # and ending at bar
 ```
  
-```{r, results='hold'}
+
+```r
 ## this example is greedy
 p1 <- 'match when you love me but not when you do not love me :('
 regmatches(p1, gregexpr('you((?:(?!not).)*)me', p1, perl = TRUE))[[1]]
 ```
 
+```
+## [1] "you love me"
+```
+
 The next regular expression uses a negative look-ahead (`(?! )`) to see if there is no character except a line break and no substring orange (`.*orange`), and if so then the dot will match any character except a line break as it is wrapped in a group (`).)`) and repeated (0 or more times, `*`). Next we look for apple and any character except a line break (`apple.*`) 0 or more times. Finally, the start and end of line anchors  (`^ $`) are in place to make sure the input is consumed.
 
-```{r, results='hold'}
+
+```r
 p1 <- c('I like apples', 'I really like apples', 
         'I like apples and oranges', 'I like oranges and apples',
         'I really like oranges and apples but oranges more')
 
 p1[grepl('^((?!.*orange).)*apple.*$', p1, perl = TRUE)]
+```
+
+```
+## [1] "I like apples"        "I really like apples"
 ```
 
 broken down:
@@ -306,7 +412,8 @@ $               # before an optional \n, and the end of the string
 
 Placing `?` after quantifiers determine if we want to match until the last occurrence of the look-ahead or until the first occurrence.
 
-```{r, results='hold'}
+
+```r
 p1 <- 'match from a to z and after z if there is a z that follows but at not the last z because I said so'
 ## match a ... z but not a ... z which contains a not
 regmatches(p1, gregexpr(' a\\s?((?:(?! not ).)*) z ', p1, perl = TRUE))[[1]]
@@ -316,15 +423,30 @@ regmatches(p1, gregexpr(' a\\s?((?:(?! not ).)*?) z ', p1, perl = TRUE))[[1]]
 regmatches(p1, gregexpr(' a(.*?)z ', p1, perl = TRUE))[[1]]
 ```
 
+```
+## [1] " a to z and after z if there is a z "
+## [1] " a to z and after z if there is a z that follows but at not the last z "
+## [1] " a to z "  " after z " " a z "    
+## [1] " a to z "            " after z "           " a z "              
+## [4] " at not the last z "
+```
+
 ### Extracting from between parentheses (or other characters)
 
-```{r, results='hold'}
+
+```r
 p1 <- 'extract (everything) between parentheses (if any)'
 ## greedily
 regmatches(p1, gregexpr('(?=\\().*(?<=\\))', p1, perl = TRUE))[[1]]
 ## not
 regmatches(p1, gregexpr('(?<=\\().*?(?=\\))', p1, perl = TRUE))[[1]]
 regmatches(p1, gregexpr('(?=\\().*?(?<=\\))', p1, perl = TRUE))[[1]]
+```
+
+```
+## [1] "(everything) between parentheses (if any)"
+## [1] "everything" "if any"    
+## [1] "(everything)" "(if any)"
 ```
 
 ### Nesting (look-arounds inside of other look-arounds)
@@ -352,18 +474,29 @@ using De Morgan's law, !(A & B) <=> !A | !B, this is equivalent to
   )
 ```
 
-```{r, results='hold'}
+
+```r
 p1 <- 'this is an unformatted,ugly sentence.no spaces one,two,many 1,000.0 commas'
 gsub('(?<=,(?!(?<=\\d,)(?=\\d)))', ' ', p1, perl = TRUE)
 gsub('(?<=[,.](?!(?<=\\d[,.])(?=\\d)))', ' ', p1, perl = TRUE)
 ```
 
+```
+## [1] "this is an unformatted, ugly sentence.no spaces one, two, many 1,000.0 commas"
+## [1] "this is an unformatted, ugly sentence. no spaces one, two, many 1,000.0 commas"
+```
+
 ### Capitalizing every first word of every sentence
 
-```{r}
+
+```r
 txt <- "this is just a test! i'm not sure if this is o.k. or if it will work? who knows? regex is sorta new to me... There are certain cases that I may not figure out. sad!"
 
 gsub("([^.!?\\s])([^.!?]*(?:[.!?](?!['\"]?\\s|$)[^.!?]*)*[.!?]?['\"]?)(?=\\s|$)", "\\U\\1\\E\\2", txt, perl = TRUE)
+```
+
+```
+## [1] "This is just a test! I'm not sure if this is o.k. Or if it will work? Who knows? Regex is sorta new to me... There are certain cases that I may not figure out. Sad!"
 ```
 
 Explanation: 
@@ -384,19 +517,40 @@ Explanation:
 
 This is an example of creating and referencing groups. Each `( )` defines a group and can be referenced with `\\N` for the N<sup>th</sup> group.
 
-```{r, results='hold'}
+
+```r
 p1 <- 'I want this here-keyword there'
 gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\2', p1, perl = TRUE)
 gsub('(.+\\s)(\\w+)(\\s|-)(keyword)(\\s|-)(\\w+).*', '\\6', p1, perl = TRUE)
 ```
 
+```
+## [1] "here"
+## [1] "there"
+```
+
 ### Extracting time formats from strings
 
-```{r, results='hold'}
+
+```r
 p1 <- c('R uses 1:5 for 1, 2, 3, 4, 5.', 
         'At 3:00 we will meet up and leave by 4:30:20.',
         'We will meet at 6:33.', 'He ran it in 0:22.34829985234 seconds.')
 regmatches(p1, gregexpr('\\d{0,2}:\\d{2}(?:[:.]\\d+)?', p1))
+```
+
+```
+## [[1]]
+## character(0)
+## 
+## [[2]]
+## [1] "3:00"    "4:30:20"
+## 
+## [[3]]
+## [1] "6:33"
+## 
+## [[4]]
+## [1] "0:22.34829985234"
 ```
 
 ### Using `\K` and inserting spaces between words
@@ -405,9 +559,14 @@ The `\K` escape sequence resets the starting point of the reported match and any
 
 Another example of using capturing groups to capture to matched context and referring back to each matched group in the replacement.
 
-```{r, results='hold'}
+
+```r
 p1 <- c('CamelCaseIsFun','ThisIsRegexxxxx')
 gsub('[a-z]\\K(?=[A-Z])', ' ', p1, perl = TRUE)
+```
+
+```
+## [1] "Camel Case Is Fun" "This Is Regexxxxx"
 ```
 
 ```
@@ -422,9 +581,14 @@ gsub('[a-z]\\K(?=[A-Z])', ' ', p1, perl = TRUE)
 
 It may be useful to filter out words with repeating characters which are not really words at all.
 
-```{r, results='hold'}
+
+```r
 p1 <- "aaaahahahahaha that was a good banana joke ahahah haha aha harhar"
 gsub('\\b(\\S+?)\\1\\S*\\b', '', p1, perl = TRUE)
+```
+
+```
+## [1] " that was a good banana joke   aha "
 ```
 
 ```
@@ -451,11 +615,17 @@ gsub('\\b(\\S+?)\\1\\S*\\b', '', p1, perl = TRUE)
 
 [See also](https://regex101.com/r/hS1rN1/1)
 
-```{r, results='hold'}
+
+```r
 p1 <- c('met','meet','eel','elm')
 
 gsub('\\w*(ee|me)\\w*(*SKIP)(*FAIL)|e', '', p1, perl = TRUE)
 gsub('\\w*[em]e\\w*(*SKIP)(?!)|e', '', p1, perl = TRUE)
+```
+
+```
+## [1] "met"  "meet" "eel"  "lm"  
+## [1] "met"  "meet" "eel"  "lm"
 ```
 
 ```
@@ -475,15 +645,21 @@ e         # e, literally
 
 ### Extract the next word after a keyword
 
-```{r, results='hold'}
+
+```r
 key <- 'the'
 p <- "The yellow log is in the stream and under the dog" 
 regmatches(p, gregexpr(sprintf('(?i)(?<=%s\\s)\\w+', key), p, perl = TRUE))[[1]]
 ```
 
+```
+## [1] "yellow" "stream" "dog"
+```
+
 ### Multiple condition matching
 
-```{r}
+
+```r
 # http://stackoverflow.com/questions/33470134/r-multiple-conditional-matching-in-a-string
 x <- c('rose','farm','rose farm','floral','farm floral','tree farm')
 # x[grepl('farm | farm', x)]
@@ -491,9 +667,14 @@ grep('((?=.*farm)(?=.*rose)|(?=.*farm)(?=.*floral)|(?=.*farm)(?=.*tree))', x,
      value = TRUE, perl = TRUE)
 ```
 
+```
+## [1] "rose farm"   "farm floral" "tree farm"
+```
+
 ### Remove contents around characters
 
-```{r, results='hold'}
+
+```r
 # http://stackoverflow.com/questions/30532491/removing-contents-of-bracelets
 x <- 'sal{del{rf}{sfddfdffdf}ghladfs}wds{w12rf}qq'
 gsub('\\{(?:[^{}]+|(?R))*+}', '', x, perl=TRUE)
@@ -503,10 +684,23 @@ x <- "sal{del{{rf}ghla}dfs}wds{w12rf}qq  "
 paste0(gsub('\\w+}|[{} ]', '', strsplit(x, '\\{\\w+')[[1]]), collapse = '')
 ```
 
+```
+## [1] "salwdsqq"
+## [1] "salwdsqq"
+```
+
 ### Split on whitespace except when inside parens
 
-```{r}
+
+```r
 # http://stackoverflow.com/questions/39733645/split-string-by-space-except-whats-inside-parentheses
 x <- '(((K05708+K05709+K05710+K00529) K05711),K05712) K05713 K05714 K02554'
 strsplit(x, "(\\((?:[^()]++|(?1))*\\))(*SKIP)(*F)| ", perl=TRUE)[[1]]
+```
+
+```
+## [1] "(((K05708+K05709+K05710+K00529) K05711),K05712)"
+## [2] "K05713"                                         
+## [3] "K05714"                                         
+## [4] "K02554"
 ```
