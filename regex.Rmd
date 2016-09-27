@@ -2,10 +2,9 @@
 title: "regex in R cheatsheet"
 output:
   html_document:
-    css: ~/knitr.css
     fig_caption: yes
     highlight: default
-    keep_md: yes
+    keep_md: no
     number_sections: no
     self_contained: yes
     theme: journal
@@ -480,4 +479,34 @@ e         # e, literally
 key <- 'the'
 p <- "The yellow log is in the stream and under the dog" 
 regmatches(p, gregexpr(sprintf('(?i)(?<=%s\\s)\\w+', key), p, perl = TRUE))[[1]]
+```
+
+### Multiple condition matching
+
+```{r}
+# http://stackoverflow.com/questions/33470134/r-multiple-conditional-matching-in-a-string
+x <- c('rose','farm','rose farm','floral','farm floral','tree farm')
+# x[grepl('farm | farm', x)]
+grep('((?=.*farm)(?=.*rose)|(?=.*farm)(?=.*floral)|(?=.*farm)(?=.*tree))', x,
+     value = TRUE, perl = TRUE)
+```
+
+### Remove contents around characters
+
+```{r, results='hold'}
+# http://stackoverflow.com/questions/30532491/removing-contents-of-bracelets
+x <- 'sal{del{rf}{sfddfdffdf}ghladfs}wds{w12rf}qq'
+gsub('\\{(?:[^{}]+|(?R))*+}', '', x, perl=TRUE)
+
+## unbalanced braces
+x <- "sal{del{{rf}ghla}dfs}wds{w12rf}qq  "
+paste0(gsub('\\w+}|[{} ]', '', strsplit(x, '\\{\\w+')[[1]]), collapse = '')
+```
+
+### Split on whitespace except when inside parens
+
+```{r}
+# http://stackoverflow.com/questions/39733645/split-string-by-space-except-whats-inside-parentheses
+x <- '(((K05708+K05709+K05710+K00529) K05711),K05712) K05713 K05714 K02554'
+strsplit(x, "(\\((?:[^()]++|(?1))*\\))(*SKIP)(*F)| ", perl=TRUE)[[1]]
 ```
