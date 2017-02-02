@@ -510,3 +510,96 @@ paste0(gsub('\\w+}|[{} ]', '', strsplit(x, '\\{\\w+')[[1]]), collapse = '')
 x <- '(((K05708+K05709+K05710+K00529) K05711),K05712) K05713 K05714 K02554'
 strsplit(x, "(\\((?:[^()]++|(?1))*\\))(*SKIP)(*F)| ", perl=TRUE)[[1]]
 ```
+
+### Prime numbers
+
+The regular expression `^1?$|^(11+?)\1+$` matches non-zero length strings in a unary number system which can be divided evenly into blocks of 1s larger than length 1 or 1 itself. Got that?
+
+```{r}
+decToUna <- function(x) strrep('1', x)
+is.prime <- function(x) !grepl('^1?$|^(11+?)\\1+$', decToUna(x))
+
+x <- 1:100
+x[is.prime(x)]
+```
+
+### `\K`, `(*SKIP)`, `(*FAIL)` revisited
+
+These expressions will skip a match if another match is found.
+
+```{r, results='hold'}
+x <- 'babbb'
+gsub('bab(*SKIP)(*FAIL)|b', '', x, perl = TRUE)
+gsub('bab(*SKIP)(*F)|b', '', x, perl = TRUE)
+gsub('ba(?=b)\\K|b', '', x, perl = TRUE)
+ore::ore_subst('bab\\K|b', '', x, all = TRUE)
+```
+
+```{r, results='hold'}
+x <- 'babbb'
+gsub('bab\\K|b', '', x, perl = TRUE)
+```
+
+http://stackoverflow.com/questions/41924971/why-does-k-appear-to-consume-a-character-in-base-rs-gsub
+
+>The regexp functions in R and PHP are based on PCRE, so they avoid getting stuck on a zero-length match by backtracking like PCRE does. But the `gsub()` function to search-and-replace in R also skips zero-length matches at the position where the previous non-zero-length match ended, like Python does.
+
+### Branch reset
+
+Alternatives in a branch reset expression share the same capture group:
+
+```{r}
+x <- c('a', 'b', 'c')
+p_branch <- '(?|(a)|(b)|(c))'
+
+## match is always in $1
+gsub(p_branch, '1=\\1; 2=\\2; 3=\\3', x, perl = TRUE)
+
+## match is only in corresponding capture group $n
+p_alt <- '(a)|(b)|(c)'
+gsub(p_alt, '1=\\1; 2=\\2; 3=\\3', x, perl = TRUE)
+```
+
+```{r, results='hold'}
+x <- c('First Middle Last', 'First MI Last', 'First MI. Last')
+p <- '(?i)(?<first>\\w+) (?<middle>\\w+) (?<last>\\w+)'
+
+## fails when no middle capture group is found
+rawr::regcaptures2(x, p)
+
+
+## error
+p <- '^(?<first>\\w+) (?<middle>\\w+) (?<last>\\w+)$|^(?<first>\\w+) (?<middle>[\\w.]+) (?<last>\\w+)$'
+# rawr::regcaptures2(x, p)
+
+
+p <- '^(?|(?<first>\\w+) (?<middle>\\w+) (?<last>\\w+)$|(?<first>\\w+) (?<middle>[\\w.]+) (?<last>\\w+)$)'
+rawr::regcaptures2(x, p)
+```
+
+### Matching valid month/day strings - non-capturing vs branch reset groups
+
+For alternative matches in **non-capturing groups**, there are six different group possibilities. In the **branch reset** examples, `$1` always holds the month and  `$2` always holds the day.
+
+```{r, results='hold'}
+x <- c(
+  '03/3', '6/31', '12/02', '9/2', '02/12', ## valid dates
+  '09/31', '6/31', '2/31'                  ## invalid dates
+)
+
+p <- c(                                    ## expressions for months with
+  '(0?[13578]|1[02])/([012]?[0-9]|3[01])', ## 31 days
+  '(0?[469]|11)/([012]?[0-9]|30)',         ## 30 days
+  '(0?2)/([012]?[0-9])'                    ## 29 days
+)
+
+p_noncap <- sprintf(
+  '^(?:%s)$', paste0(p, collapse = '|')
+)
+p_branch <- sprintf(
+  '^(?|%s)$', paste0(p, collapse = '|')
+)
+
+do.call('rbind', rawr::regcaptures2(x, p_noncap, FALSE))
+do.call('rbind', rawr::regcaptures2(x, p_branch, FALSE))
+```

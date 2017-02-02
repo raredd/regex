@@ -51,6 +51,10 @@ output:
 <li><a href="#multiple-condition-matching">Multiple condition matching</a></li>
 <li><a href="#remove-contents-around-characters">Remove contents around characters</a></li>
 <li><a href="#split-on-whitespace-except-when-inside-parens">Split on whitespace except when inside parens</a></li>
+<li><a href="#prime-numbers">Prime numbers</a></li>
+<li><a href="#k-skip-fail-revisited"><code>\K</code>, <code>(*SKIP)</code>, <code>(*FAIL)</code> revisited</a></li>
+<li><a href="#branch-reset">Branch reset</a></li>
+<li><a href="#matching-valid-monthday-strings---non-capturing-vs-branch-reset-groups">Matching valid month/day strings - non-capturing vs branch reset groups</a></li>
 </ul></li>
 </ul>
 </div>
