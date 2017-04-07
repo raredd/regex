@@ -107,7 +107,7 @@ The following characters need to be escaped because they have special meanings:
  character | meaning
 --------|--------
 `.`     |match any single character (except `\n`; use `/s` to match `\n`, too)
-`|`     |matches either the subexpression preceding or following it
+<code>&#124;</code>|matches either the subexpression preceding or following it
 `( )`   |groups subexpressions for capturing to $1, $2... (\\1, \\2, ... in R)
 `(?: )` |groups subexpressions without capturing (cluster)
 `{ }`   |specifies a range of occurrences for the element preceding it
@@ -204,18 +204,24 @@ character | meaning
 
 ## Function for captures
 
-Common r functions like `regexpr`, `gregexpr`, or `regexec` are more focused on matching regular expressions than returning matches. Using a [helper function](https://github.com/raredd/rawr/blob/master/R/utils.R#L1352:L1420), we can extract the captures in a useful format.
+Common r functions like `regexpr`, `gregexpr`, or `regexec` are more focused on matching regular expressions than returning matches. Using a [helper function](https://github.com/raredd/rawr/blob/master/R/utils.R#L1304:L1355), we can extract the captures in a useful format.
 
 
 ```r
 library('rawr')
+
 x <- c('larry:35,M', 'alison:22,F', 'dave', 'lily:55,F')
-m <- regexpr('(.*):(\\d+),([MF])', x, perl = TRUE)
+p <- '(.*):(\\d+),([MF])'
+m <- regexpr(p, x, perl = TRUE)
+
 regcaptures(x, m)
+## or in one step
+# regcaptures2(x, p)
 
 x <- 'ACCACCACCAC'
 m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
 regcaptures(x, m)[[1]]
+regcaptures2(x, m)[[1]]
 ```
 
 ```
@@ -236,6 +242,7 @@ regcaptures(x, m)[[1]]
 ## 
 ##      1    2    4    5    7    8    10  
 ## [1,] "AC" "CC" "AC" "CC" "AC" "CC" "AC"
+## character(0)
 ```
 
 ## Examples
@@ -265,9 +272,25 @@ gsub('\\s+', '', p1)
 ## [1] "thistextstringhasmuchwhitespaceandevensomenewlines"
 ```
 
+With the `perl = TRUE` option, we can use `\h` and `\v` for "horizontal" or "vertical" whitespace, respectively, while not matching the other.
+
 
 ```r
-## remove whitespace between single letters
+cat(gsub('\\h+', '', p1, perl = TRUE))
+cat(gsub('\\v+', '', p1, perl = TRUE))
+```
+
+```
+## thistextstringhasmuchwhitespace
+## andevensomenew
+## 
+## lines  this text string   has much white space and even some new lines
+```
+
+Remove whitespace between single letters
+
+
+```r
 p1 <- c('L L C',  'P O BOX  123456 N Y', 'NEW YORK')
 gsub('(?<=\\b\\w)\\s(?=\\w\\b)', '', p1, perl = TRUE)
 ```

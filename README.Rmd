@@ -4,7 +4,7 @@ output:
   html_document:
     fig_caption: yes
     highlight: default
-    keep_md: no
+    keep_md: yes
     number_sections: no
     self_contained: yes
     theme: journal
@@ -118,7 +118,7 @@ The following characters need to be escaped because they have special meanings:
  character | meaning
 --------|--------
 `.`     |match any single character (except `\n`; use `/s` to match `\n`, too)
-`|`     |matches either the subexpression preceding or following it
+<code>&#124;</code>|matches either the subexpression preceding or following it
 `( )`   |groups subexpressions for capturing to $1, $2... (\\1, \\2, ... in R)
 `(?: )` |groups subexpressions without capturing (cluster)
 `{ }`   |specifies a range of occurrences for the element preceding it
@@ -215,17 +215,23 @@ character | meaning
 
 ## Function for captures
 
-Common r functions like `regexpr`, `gregexpr`, or `regexec` are more focused on matching regular expressions than returning matches. Using a [helper function](https://github.com/raredd/rawr/blob/master/R/utils.R#L1352:L1420), we can extract the captures in a useful format.
+Common r functions like `regexpr`, `gregexpr`, or `regexec` are more focused on matching regular expressions than returning matches. Using a [helper function](https://github.com/raredd/rawr/blob/master/R/utils.R#L1304:L1355), we can extract the captures in a useful format.
 
 ```{r, results='hold'}
 library('rawr')
+
 x <- c('larry:35,M', 'alison:22,F', 'dave', 'lily:55,F')
-m <- regexpr('(.*):(\\d+),([MF])', x, perl = TRUE)
+p <- '(.*):(\\d+),([MF])'
+m <- regexpr(p, x, perl = TRUE)
+
 regcaptures(x, m)
+## or in one step
+# regcaptures2(x, p)
 
 x <- 'ACCACCACCAC'
 m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
 regcaptures(x, m)[[1]]
+regcaptures2(x, m)[[1]]
 ```
 
 ## Examples
@@ -247,8 +253,16 @@ gsub('^\\s+|\\s+$', '', p1)
 gsub('\\s+', '', p1)
 ```
 
+With the `perl = TRUE` option, we can use `\h` and `\v` for "horizontal" or "vertical" whitespace, respectively, while not matching the other.
+
 ```{r, results='hold'}
-## remove whitespace between single letters
+cat(gsub('\\h+', '', p1, perl = TRUE))
+cat(gsub('\\v+', '', p1, perl = TRUE))
+```
+
+Remove whitespace between single letters
+
+```{r, results='hold'}
 p1 <- c('L L C',  'P O BOX  123456 N Y', 'NEW YORK')
 gsub('(?<=\\b\\w)\\s(?=\\w\\b)', '', p1, perl = TRUE)
 ```
@@ -557,4 +571,97 @@ paste0(gsub('\\w+}|[{} ]', '', strsplit(x, '\\{\\w+')[[1]]), collapse = '')
 # http://stackoverflow.com/questions/39733645/split-string-by-space-except-whats-inside-parentheses
 x <- '(((K05708+K05709+K05710+K00529) K05711),K05712) K05713 K05714 K02554'
 strsplit(x, "(\\((?:[^()]++|(?1))*\\))(*SKIP)(*F)| ", perl=TRUE)[[1]]
+```
+
+### Prime numbers
+
+The regular expression `^1?$|^(11+?)\1+$` matches non-zero length strings in a unary number system which can be divided evenly into blocks of 1s larger than length 1 or 1 itself. Got that?
+
+```{r}
+decToUna <- function(x) strrep('1', x)
+is.prime <- function(x) !grepl('^1?$|^(11+?)\\1+$', decToUna(x))
+
+x <- 1:100
+x[is.prime(x)]
+```
+
+### `\K`, `(*SKIP)`, `(*FAIL)` revisited
+
+These expressions will skip a match if another match is found.
+
+```{r, results='hold'}
+x <- 'babbb'
+gsub('bab(*SKIP)(*FAIL)|b', '', x, perl = TRUE)
+gsub('bab(*SKIP)(*F)|b', '', x, perl = TRUE)
+gsub('ba(?=b)\\K|b', '', x, perl = TRUE)
+ore::ore_subst('bab\\K|b', '', x, all = TRUE)
+```
+
+```{r, results='hold'}
+x <- 'babbb'
+gsub('bab\\K|b', '', x, perl = TRUE)
+```
+
+http://stackoverflow.com/questions/41924971/why-does-k-appear-to-consume-a-character-in-base-rs-gsub
+
+>The regexp functions in R and PHP are based on PCRE, so they avoid getting stuck on a zero-length match by backtracking like PCRE does. But the `gsub()` function to search-and-replace in R also skips zero-length matches at the position where the previous non-zero-length match ended, like Python does.
+
+### Branch reset
+
+Alternatives in a branch reset expression share the same capture group:
+
+```{r}
+x <- c('a', 'b', 'c')
+p_branch <- '(?|(a)|(b)|(c))'
+
+## match is always in $1
+gsub(p_branch, '1=\\1; 2=\\2; 3=\\3', x, perl = TRUE)
+
+## match is only in corresponding capture group $n
+p_alt <- '(a)|(b)|(c)'
+gsub(p_alt, '1=\\1; 2=\\2; 3=\\3', x, perl = TRUE)
+```
+
+```{r, results='hold'}
+x <- c('First Middle Last', 'First MI Last', 'First MI. Last')
+p <- '(?i)(?<first>\\w+) (?<middle>\\w+) (?<last>\\w+)'
+
+## fails when no middle capture group is found
+rawr::regcaptures2(x, p)
+
+
+## error
+p <- '^(?<first>\\w+) (?<middle>\\w+) (?<last>\\w+)$|^(?<first>\\w+) (?<middle>[\\w.]+) (?<last>\\w+)$'
+# rawr::regcaptures2(x, p)
+
+
+p <- '^(?|(?<first>\\w+) (?<middle>\\w+) (?<last>\\w+)$|(?<first>\\w+) (?<middle>[\\w.]+) (?<last>\\w+)$)'
+rawr::regcaptures2(x, p)
+```
+
+### Matching valid month/day strings - non-capturing vs branch reset groups
+
+For alternative matches in **non-capturing groups**, there are six different group possibilities. In the **branch reset** examples, `$1` always holds the month and  `$2` always holds the day.
+
+```{r, results='hold'}
+x <- c(
+  '03/3', '6/31', '12/02', '9/2', '02/12', ## valid dates
+  '09/31', '6/31', '2/31'                  ## invalid dates
+)
+
+p <- c(                                    ## expressions for months with
+  '(0?[13578]|1[02])/([012]?[0-9]|3[01])', ## 31 days
+  '(0?[469]|11)/([012]?[0-9]|30)',         ## 30 days
+  '(0?2)/([012]?[0-9])'                    ## 29 days
+)
+
+p_noncap <- sprintf(
+  '^(?:%s)$', paste0(p, collapse = '|')
+)
+p_branch <- sprintf(
+  '^(?|%s)$', paste0(p, collapse = '|')
+)
+
+do.call('rbind', rawr::regcaptures2(x, p_noncap, FALSE))
+do.call('rbind', rawr::regcaptures2(x, p_branch, FALSE))
 ```
