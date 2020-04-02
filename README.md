@@ -1,15 +1,4 @@
----
-title: "regex in R cheatsheet"
-output:
-  html_document:
-    fig_caption: yes
-    highlight: default
-    keep_md: yes
-    number_sections: no
-    self_contained: yes
-    theme: journal
-    toc: yes
----
+# regex in R cheatsheet
 
 <div id="TOC">
 <ul>
