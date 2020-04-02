@@ -1,4 +1,15 @@
-# regex in R cheatsheet
+---
+title: "regex in R cheatsheet"
+output:
+  html_document:
+    fig_caption: yes
+    highlight: default
+    keep_md: yes
+    number_sections: no
+    self_contained: yes
+    theme: journal
+    toc: yes
+---
 
 <div id="TOC">
 <ul>
@@ -44,6 +55,8 @@
 <li><a href="#k-skip-fail-revisited"><code>\K</code>, <code>(*SKIP)</code>, <code>(*FAIL)</code> revisited</a></li>
 <li><a href="#branch-reset">Branch reset</a></li>
 <li><a href="#matching-valid-monthday-strings---non-capturing-vs-branch-reset-groups">Matching valid month/day strings - non-capturing vs branch reset groups</a></li>
+<li><a href="#capture-items-from-a-list">Capture items from a list</a></li>
+<li><a href="#nested-parens">Nested parens</a></li>
 </ul></li>
 </ul>
 </div>
@@ -658,7 +671,7 @@ gsub('\\w*[em]e\\w*(*SKIP)(?!)|e', '', p1, perl = TRUE)
 ```
 \w*       # match any word character [a-zA-Z0-9_], 0 or more times, greedy
 (         # group and capture to \1:
-  ee|me    # ee or me, literally
+  ee|me     # ee or me, literally
 )         # end \1
 \w*       # match any word character [a-zA-Z0-9_], 0 or more times, greedy
 (*SKIP)   # acts like (*PRUNE), except that if the pattern is unanchored,
@@ -746,8 +759,7 @@ x[is.prime(x)]
 ```
 
 ```
-##  [1]  2  3  5  7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83
-## [24] 89 97
+##  [1]  2  3  5  7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97
 ```
 
 ### `\K`, `(*SKIP)`, `(*FAIL)` revisited
@@ -893,4 +905,74 @@ do.call('rbind', rawr::regcaptures2(x, p_branch, FALSE))
 ## [2,] "12" "02"
 ## [3,] "9"  "2" 
 ## [4,] "02" "12"
+```
+
+### Capture items from a list
+
+```
+(?:              # non-capture group
+  \G(?!\A)[,;]?    # match the end of the previous successful match followed by [,;] 1 or 0 times
+  |                # or
+  \w:              # "word" characters followed by :
+)               # end of non-capture group
+\R              # a line break sequence
+\h*             # 0 or more horizontal whitespaces
+\K              # match reset operator discarding all the text matched so far
+[^\s,]+         # 1 or more chars other than whitespace and [,;]
+```
+
+
+```r
+# https://stackoverflow.com/questions/44831765/regex-r-and-commas
+x <- 
+  "
+here is a list of things that I need to do..
+
+  todo:
+    eat,
+    sleep
+    drink,
+    party;
+    repeat
+
+then I'm done!
+  "
+
+p <- '(?:\\G(?!\\A)[,;]?|\\w:)\\R\\h*\\K([^\\s,;]+)'
+rawr::regcaptures2(x, p)[[1L]]
+```
+
+```
+##      60    69      79      90      101     
+## [1,] "eat" "sleep" "drink" "party" "repeat"
+```
+
+### Nested parens
+
+Removing all nested parentheses but keep outermost pair
+
+```
+^\\([^()]+\\)(?!$)          # special case to leave the parens if it encompasses
+                            #   the entire value of the string
+^\((?=.+\)$)(*SKIP)(*FAIL)  # do not match a pair of parentheses that encloses
+                            #   the string from start to end
+^\([^\(\)]+\)(?!$)          # match paren at the beginning that is closed earlier
+```
+
+
+```r
+# https://stackoverflow.com/q/60837843/2994949
+
+x <- c(
+  '(keep all)',
+  '(keep (not this) this)',
+  '((dont keep this (or this)) but keep this)'
+)
+
+p <- '^\\([^()]+\\)(?!$)|^\\((?=.+\\)$)(*SKIP)(*FAIL)|\\((?:[^()]|(?R))*\\)'
+gsub(p, '', x, perl = TRUE)
+```
+
+```
+## [1] "(keep all)"       "(keep  this)"     "( but keep this)"
 ```
